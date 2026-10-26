@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import './register-typescript.mjs';
 const { replayRace }=await import('../lib/replay.ts');
 const { advance,input,newRoom,player }=await import('../lib/game.ts');
-function replay(mode='practice'){return {id:crypto.randomUUID(),seed:55,mode,duration:150000,players:[{name:'Tuxedo',skin:'tuxedo'},...(mode==='local'?[{name:'Calico',skin:'calico'}]:[])],events:[]};}
+function replay(mode='practice'){return {id:crypto.randomUUID(),seed:55,physicsVersion:2,mode,duration:150000,players:[{name:'Tuxedo',skin:'tuxedo'},...(mode==='local'?[{name:'Calico',skin:'calico'}]:[])],events:[]};}
 test('solo and local replays compute real finish times and selected cats',()=>{
  for(const mode of ['practice','local']){const r=replayRace(replay(mode));assert.equal(r.status,'finished');assert.equal(r.players[0].skin,'tuxedo');assert.ok(r.players.every(p=>p.finish>80000&&p.finish<110000));if(mode==='local')assert.equal(r.players[1].skin,'calico');}
 });

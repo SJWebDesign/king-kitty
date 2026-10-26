@@ -127,7 +127,7 @@ export default function Game() {
     rememberRacerName(name);if(local)rememberRacerName(secondName,1);
     const r=newRoom("LOCAL",player("p1",name.trim()||"King Kitty",0,undefined,skin),local?"local":"practice",Math.floor(Math.random()*2**32));
     if(local)r.players.push(player("p2",secondName.trim(),1,undefined,secondSkin));r.players.forEach(p=>p.ready=true);start(r,Date.now());
-    replayRef.current={id:crypto.randomUUID(),seed:r.seed,mode:local?"local":"practice",duration:0,players:r.players.map((p,i)=>({name:p.name,skin:p.skin,profile:racerProfile(i)})),events:[]};setSaveStatus("");
+    replayRef.current={id:crypto.randomUUID(),seed:r.seed,physicsVersion:r.physicsVersion,mode:local?"local":"practice",duration:0,players:r.players.map((p,i)=>({name:p.name,skin:p.skin,profile:racerProfile(i)})),events:[]};setSaveStatus("");
     identityRef.current=null;setIdentity(null);roomRef.current=r;setRoom(r);setScreen("race");setError("");localPaused.current=null;
   }
   useEffect(()=>{

@@ -13,6 +13,8 @@ https://king-kitty-alley-race.nielsensamantha2005.chatgpt.site
 - **Local co-op:** two players share one keyboard and race in split screen.
 - **Jump:** Space, W, or Up. **Grab:** E, G, or Right. Touch buttons are also available.
 - Local two-player controls: Player 1 W/E; Player 2 Up/Right.
+- **Obstacle collisions:** tight sprite crops and shape-aware hitboxes ignore empty corners and forgive grazing paws. Existing races and queued results keep their original physics.
+- **Leaderboard scene:** live names, cats, times, wins, and race counts appear inside the illustrated sign, with scrolling and a phone layout.
 - **Longer alley:** 24,000 units, about 80–100 seconds depending on jumps and boosts. Five obstacle sizes mix short, wide objects with taller ones. Time your jump so your paws stay above the entire obstacle.
 - **All-time leaderboard:** online, solo, and local races all contribute. Fastest times rank first; race counts and competitive wins are also shown. Records begin with v0.3 and stay in the hosted database across updates. Earlier v0.2 races did not store a permanent history and cannot be recovered.
 - **Loading scenes:** an animated selected cat and paw trail appear while art, rooms, and scores load. Short minimum durations keep transitions smooth.

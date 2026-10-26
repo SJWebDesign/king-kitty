@@ -1,5 +1,6 @@
 import { COLORS, LENGTH, advance, standings, pickupPosition, type Room, type Player } from "./game";
 import { CATS, validCat, type CatSkin } from "./cats";
+import { OBSTACLE_FRAMES, obstacleWidth } from "./obstacles";
 type Sprite = { x:number;y:number;w:number;h:number };
 export type GameArt = { skins: Record<CatSkin,{image:HTMLImageElement;frames:Sprite[]}>; wall: HTMLImageElement; cat: HTMLImageElement; props: HTMLImageElement; boosts: HTMLImageElement; boostFrames: Sprite[]; catFrames: Sprite[]; propFrames: Sprite[] };
 type Art = GameArt;
@@ -54,7 +55,7 @@ export function drawRace(canvas:HTMLCanvasElement,room:Room,focusId:string,art:A
   const sx=(x:number)=>anchor+(x-camera)*scale;
   for(const ob of room.course.obstacles) {
     const x=sx(ob.x);if(x< -90 ||x>w+90)continue;
-    const frame=art.propFrames[ob.kind],width=(ob.w??70)*scale,height=ob.h*scale;
+    const frame=room.physicsVersion===2?OBSTACLE_FRAMES[ob.kind]:art.propFrames[ob.kind],width=obstacleWidth(ob)*scale,height=ob.h*scale;
     ctx.drawImage(art.props,frame.x,frame.y,frame.w,frame.h,x-width/2,ground+7*scale-height,width,height);
   }
   for(const obj of room.course.pickups){

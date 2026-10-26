@@ -1,4 +1,6 @@
 import { validCat, type CatSkin } from "./cats";
+import { hitsObstacle } from "./obstacles";
+export const PHYSICS_VERSION = 2;
 export const LENGTH = 24000;
 export const SPEED = 290;
 export const STEP = 20;
@@ -13,6 +15,7 @@ export type Player = {
   hits: number[]; collected: number[]; lastSeq: number; seenAt: number; left?: boolean;
 };
 export type Room = {
+  physicsVersion?: 1 | 2;
   code: string; host: string; mode: "online" | "practice" | "local";
   seed: number; round: number; status: "lobby" | "racing" | "finished";
   startAt: number; tick: number; players: Player[]; course: Course;
@@ -49,7 +52,7 @@ export function player(id: string, name: string, index = 0, token?: string, skin
     finish: null, hits: [], collected: [], lastSeq: 0, seenAt: Date.now()};
 }
 export function newRoom(code: string, host: Player, mode: Room["mode"] = "online", seed = Date.now()): Room {
-  return {code, host: host.id, mode, seed, round: 1, status: "lobby", startAt: 0,
+  return {code, host: host.id, mode, seed, physicsVersion:PHYSICS_VERSION, round: 1, status: "lobby", startAt: 0,
     tick: 0, players: [host], course: courseFor(seed), createdAt: Date.now()};
 }
 export function start(room: Room, now: number) {
@@ -78,13 +81,16 @@ export function advance(room: Room, now: number) {
     const t = room.tick, dt = STEP / 1000;
     for (const p of room.players) {
       if (p.finish !== null || p.left) continue;
-      const oldX = p.x;
+      const oldX = p.x, oldY = p.y;
       const speed = SPEED * (t < p.slowUntil ? .52 : 1) * (t < p.boostUntil ? 1.25 : 1);
       p.x = Math.min(LENGTH, p.x + speed * dt);
       if (p.y > 0 || p.vy > 0) { p.y = Math.max(0, p.y + p.vy * dt); p.vy -= 1550 * dt; if (p.y === 0) p.vy = 0; }
       for (const ob of room.course.obstacles) {
         const reach=(ob.w??50)/2+10;
-        if (oldX <= ob.x + reach && p.x >= ob.x - reach && p.y < ob.h && !p.hits.includes(ob.id)) {
+        const contact=room.physicsVersion===PHYSICS_VERSION
+          ? hitsObstacle(ob,{x:oldX,y:oldY},p)
+          : oldX <= ob.x + reach && p.x >= ob.x - reach && p.y < ob.h;
+        if (contact && !p.hits.includes(ob.id)) {
           p.hits.push(ob.id); p.slowUntil = t + 760;
         }
       }

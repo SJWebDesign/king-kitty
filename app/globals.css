@@ -96,3 +96,62 @@
 @media(prefers-reduced-motion:reduce){.game-app *,.game-app *::before,.game-app *::after{animation:none!important;transition:none!important}}
 
 .cats-panel .name-hint{font-size:11px;margin:8px 0}.cats-panel .cat-choices{gap:7px 28px;margin:8px 0}.cats-panel .cat-portrait{width:112px;height:99px}.cats-panel{padding-top:8px}.cats-panel .cat-player-tabs{margin-top:14px}.cats-panel>.subtle{margin:10px 0}.cats-panel>.gold-button{margin:12px 10px 12px 0}.cats-panel .quiet-link{min-width:90px}@media(max-width:700px){.cats-panel .cat-portrait{width:100px;height:89px}.cats-panel .cat-choices{gap:7px 14px}.cats-panel{padding:20px 16px}.cats-panel h2{font-size:28px}}
+
+/* Keep the records tied to the painted sign, including while the page scrolls. */
+.scene-leaderboard .topbar{position:absolute;inset:0 0 auto;z-index:3}
+.scene-leaderboard .scene-shade{display:none}
+.scene-leaderboard .scene-art{animation:none}
+.leaderboard-stage{position:relative;width:100%;aspect-ratio:1024/683;background:url('/assets/scenes-records.png') 0 0/200% 100% no-repeat;image-rendering:pixelated}
+.leaderboard-intro{position:absolute;left:7%;top:24%;width:43%;max-width:560px;padding:20px 24px;text-shadow:0 2px 5px #071317;background:#0c1b21b8;border-radius:6px;image-rendering:auto}
+.leaderboard-intro h2{font:700 clamp(30px,3.8vw,58px)/1.08 Georgia,serif;color:var(--gold);margin:12px 0 18px}
+.leaderboard-intro>p:not(.eyebrow){font-size:14px;line-height:1.6}
+.leaderboard-intro .subtle{font-size:11px!important;color:#cad0bc}
+.leaderboard-tabs{display:grid;grid-template-columns:1fr 1fr;margin:20px 0 10px;gap:10px}
+.leaderboard-intro .leaderboard-tabs .quiet-link{width:100%;min-height:42px}
+.leaderboard-tabs [aria-pressed="true"]{filter:brightness(1.3);text-decoration:underline;text-underline-offset:4px}
+.leaderboard-actions{margin-top:16px}
+.leaderboard-pages{margin:12px 0;min-height:18px}
+.leaderboard-pages>span{margin-left:0}
+.leaderboard-privacy{margin-bottom:0}
+.leaderboard-board{position:absolute;left:65.43%;top:0;width:33.2%;height:82%;image-rendering:pixelated}
+.leaderboard-inscription{position:absolute;left:11%;top:24%;width:76%;height:61%;display:flex;flex-direction:column;color:#f1e3bf;text-shadow:0 1px 2px #000;font-family:Georgia,serif;image-rendering:auto}
+.board-caption{flex:none;margin:0 0 10px;font-size:clamp(10px,1.05vw,16px);text-align:center;color:#ebcb87;letter-spacing:.7px;text-transform:uppercase}
+.leaderboard-scroll{min-height:0;overflow:auto;scrollbar-width:thin;scrollbar-color:#ad935a #152429;overscroll-behavior:contain;padding:0 3px}
+.leaderboard-scroll:focus-visible{outline-offset:-2px}
+.leaderboard-table{margin:0;background:none;border:0;border-radius:0;overflow:visible}
+.leaderboard-row{grid-template-columns:minmax(0,1fr) auto;gap:6px;padding:12px 0;border-color:#d5b57630;font-size:clamp(11px,1.05vw,16px);min-height:56px}
+.leaderboard-heading{font-family:Arial,Helvetica,sans-serif;font-size:9px;min-height:26px;padding:4px 0;background:none;color:#dbc18b;text-transform:uppercase}
+.leaderboard-heading>span:last-child,.leaderboard-row>strong{text-align:right}
+.leaderboard-row>strong{font-size:clamp(10px,1vw,15px);white-space:nowrap;font-variant-numeric:tabular-nums;color:#f4d48b}
+.leaderboard-racer{gap:5px}.leaderboard-racer>b{width:16px;flex:none;font-size:14px}
+.leaderboard-racer .cat-mini{width:30px;height:27px;flex:none;margin:0}
+.leaderboard-racer>span:last-child{min-width:0;overflow-wrap:anywhere;font-weight:700;line-height:1.25}
+.leaderboard-racer small,.leaderboard-row>strong small{display:block;font:9px/1.4 Arial,Helvetica,sans-serif;color:#c5cbb7;margin-top:4px;font-weight:400}
+.leaderboard-inscription .empty-board{padding:20px 8px;font-size:14px;line-height:1.6;text-align:center}
+.leaderboard-inscription .loading-inline{min-height:0;flex:1;margin:0;background:none;border:0;overflow:hidden}
+.leaderboard-inscription .loading-art{display:none}
+.leaderboard-inscription .loading-content{padding:8px}
+.leaderboard-inscription .loading-content h2{font-size:16px}
+.leaderboard-inscription .loading-cat{width:90px;height:80px}
+.leaderboard-inscription .leaderboard-error{font:13px/1.5 Arial,sans-serif;text-align:center}
+@media(max-width:900px){
+ .leaderboard-stage{aspect-ratio:auto;padding:90px 0 20px;background:none}
+ .scene-leaderboard .menu-scene{background:#142329}
+ .scene-leaderboard .scene-art{left:0;opacity:.35}
+ .leaderboard-intro{position:relative;left:auto;top:auto;width:calc(100% - 32px);max-width:480px;margin:0 auto;padding:18px 20px;background:#0c1b21b8;text-align:center}
+ .leaderboard-intro h2{font-size:32px;margin:10px 0 14px}
+ .leaderboard-intro h2 br{display:none}
+ .leaderboard-intro .eyebrow{font-size:8px;letter-spacing:2px}
+ .leaderboard-intro>p:not(.eyebrow){font-size:12px}
+ .leaderboard-intro .leaderboard-actions,.leaderboard-intro .leaderboard-pages{justify-content:center}
+ .leaderboard-board{position:relative;left:auto;top:auto;width:min(100%,480px);height:auto;aspect-ratio:340/560;margin:8px auto 0;background:url('/assets/scenes-records.png') 39.227% 0/602.353% 121.964% no-repeat}
+ .leaderboard-inscription{left:11%;top:24%;width:76%;height:61%}
+ .board-caption{font-size:12px}
+ .leaderboard-row{font-size:13px;padding:12px 0;min-height:58px}
+ .leaderboard-row>strong{font-size:13px}
+ .leaderboard-heading{min-height:26px;font-size:9px;padding:4px 0}
+ .leaderboard-racer .cat-mini{width:32px;height:29px}
+ .leaderboard-privacy{display:none}
+}
+.leaderboard-scroll{background:#132024b8}
+@media(max-width:900px){.leaderboard-intro h2{font-size:clamp(25px,7.5vw,32px)}.leaderboard-intro{padding:14px 16px}}

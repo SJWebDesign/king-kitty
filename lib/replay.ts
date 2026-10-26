@@ -1,11 +1,14 @@
 import { advance, input, newRoom, player, type Room } from './game';
 import { validCat } from './cats';
 export type ReplayEvent={player:number;move:'jump'|'grab';t:number};
-export type LocalReplay={id:string;seed:number;mode:'practice'|'local';duration:number;players:{name:string;skin:string;profile?:{id:string;token:string}}[];events:ReplayEvent[]};
+export type LocalReplay={id:string;seed:number;physicsVersion?:1|2;mode:'practice'|'local';duration:number;players:{name:string;skin:string;profile?:{id:string;token:string}}[];events:ReplayEvent[]};
 export function replayRace(data:LocalReplay):Room {
+  if(data?.physicsVersion!==undefined&&![1,2].includes(data.physicsVersion))throw new Error('Invalid physics version.');
   if(!data||!/^[-a-zA-Z0-9]{16,80}$/.test(data.id)||!['practice','local'].includes(data.mode)||!Number.isSafeInteger(data.seed)||!Number.isFinite(data.duration)||data.duration<0||data.duration>150000)throw new Error('Invalid race record.');
   if(!Array.isArray(data.players)||data.players.length!==(data.mode==='local'?2:1)||!Array.isArray(data.events)||data.events.length>1200)throw new Error('Invalid race record.');
   const r=newRoom('LOCAL',player('p1','Kitty',0,undefined,validCat(data.players[0].skin)),data.mode,data.seed);
+  // Pending races from an older browser retain their original finish times.
+  r.physicsVersion=data.physicsVersion??1;
   if(data.mode==='local')r.players.push(player('p2','Kitty Two',1,undefined,validCat(data.players[1].skin)));
   r.status='racing';r.startAt=1;let previous=0;
   for(const e of data.events){
