@@ -54,7 +54,8 @@ export function drawRace(canvas:HTMLCanvasElement,room:Room,focusId:string,art:A
   const sx=(x:number)=>anchor+(x-camera)*scale;
   for(const ob of room.course.obstacles) {
     const x=sx(ob.x);if(x< -90 ||x>w+90)continue;
-    sprite(ctx,art.props,art.propFrames[ob.kind],x,ground+8*scale,95*scale,(ob.h+10)*scale);
+    const frame=art.propFrames[ob.kind],width=(ob.w??70)*scale,height=ob.h*scale;
+    ctx.drawImage(art.props,frame.x,frame.y,frame.w,frame.h,x-width/2,ground+7*scale-height,width,height);
   }
   for(const obj of room.course.pickups){
     const position=pickupPosition(obj,room.tick),x=sx(position.x);
@@ -103,5 +104,5 @@ export function drawRace(canvas:HTMLCanvasElement,room:Room,focusId:string,art:A
     ctx.textAlign="center";ctx.fillStyle="#f4d28d";ctx.font=`bold ${Math.min(100,h*.28)}px Georgia`;ctx.fillText(String(Math.ceil((room.startAt-now)/1000)),w/2,h*.48);
     ctx.font="16px system-ui";ctx.fillText("Get your paws ready",w/2,h*.58);
   }
-  if(me.finish!==null){ctx.textAlign="center";ctx.fillStyle="rgba(12,22,27,.9)";ctx.fillRect(w/2-155,h*.32,310,76);ctx.fillStyle="#f3d38a";ctx.font="bold 24px Georgia";ctx.fillText("Across the line!",w/2,h*.32+31);ctx.font="14px system-ui";ctx.fillText(`${(me.finish/1000).toFixed(2)} seconds`,w/2,h*.32+56);}
+  if(me.finish!==null){ctx.textAlign="center";ctx.fillStyle="rgba(12,22,27,.9)";ctx.fillRect(w/2-155,h*.32,310,76);ctx.fillStyle="#f3d38a";ctx.font="bold 24px Georgia";ctx.fillText("Across the line!",w/2,h*.32+31);ctx.font="14px system-ui";ctx.fillText(`${(Math.round(me.finish)/1000).toFixed(2)} seconds`,w/2,h*.32+56);}
 }

@@ -1,5 +1,6 @@
 import { env } from "cloudflare:workers";
 import { advance, input, newRoom, player, publicRoom, rematch, start, type Room } from "@/lib/game";
+import { ensureProfile, recordRace, type ProfileKey } from "@/lib/records";
 import { validCat } from "@/lib/cats";
 export const dynamic = "force-dynamic";
 type Row = { code: string; state: string; revision: number; expires_at: number };
@@ -20,15 +21,18 @@ export async function POST(request: Request) {
   const action = b.action, now=Date.now();
   try {
     if (action === "create") {
+      const profile=await ensureProfile(env.DB,b.profile,cleanName(b.name));
       const host = player(secret().slice(0,12),cleanName(b.name),0,secret(),validCat(b.skin));
+      host.profileId=profile.id;
       const room = newRoom(code(),host,"online",crypto.getRandomValues(new Uint32Array(1))[0]);
       // Expired lobbies never retain nicknames or session tokens indefinitely.
       await env.DB.prepare("DELETE FROM rooms WHERE expires_at < ?").bind(now).run();
       await env.DB.prepare("INSERT INTO rooms (code,state,revision,expires_at) VALUES (?,?,0,?)")
         .bind(room.code,JSON.stringify(room),now+2*60*60*1000).run();
-      return response({room:publicRoom(room,0,now),identity:{id:host.id,token:host.token,code:room.code}});
+      return response({room:publicRoom(room,0,now),identity:{id:host.id,token:host.token,code:room.code},profile});
     }
     if (!/^[A-Z2-9]{6}$/.test(String(b.code ?? ""))) return response({error:"Enter the six-character room code."},400);
+    let joinedProfile:ProfileKey|undefined;
     const joinId = secret().slice(0,12), joinToken=secret();
     for(let attempt=0;attempt<8;attempt++) {
       const row=await env.DB.prepare("SELECT * FROM rooms WHERE code = ?").bind(b.code).first<Row>();
@@ -38,7 +42,9 @@ export async function POST(request: Request) {
       if(action==="join") {
         if(room.status!=="lobby") return response({error:"This race has already started. Join after the next rematch."},409);
         if(room.players.length>=8) return response({error:"This room is full (8 racers)."},409);
+        joinedProfile??=await ensureProfile(env.DB,b.profile,cleanName(b.name));
         const p=player(joinId,cleanName(b.name),room.players.length,joinToken,validCat(b.skin));
+        p.profileId=joinedProfile.id;
         room.players.push(p); identity={id:p.id,token:p.token,code:room.code};
       } else {
         const p=room.players.find(p=>p.id===b.id && p.token===b.token && !p.left);
@@ -64,7 +70,10 @@ export async function POST(request: Request) {
       }
       const update=await env.DB.prepare("UPDATE rooms SET state = ?, revision = revision + 1 WHERE code = ? AND revision = ?")
         .bind(JSON.stringify(room),room.code,row.revision).run();
-      if(update.meta.changes===1) return response({room:publicRoom(room,row.revision+1,now),...(identity?{identity}:{})});
+      if(update.meta.changes===1) {
+        await recordRace(env.DB,room);
+        return response({room:publicRoom(room,row.revision+1,now),...(identity?{identity,profile:joinedProfile}:{})});
+      }
     }
     return response({error:"The room is busy. Please try again."},409);
   } catch(error) {

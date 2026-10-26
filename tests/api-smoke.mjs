@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 const base=process.env.TEST_URL || 'http://127.0.0.1:5173';
+if(!/^http:\/\/(127\.0\.0\.1|localhost):/.test(base))throw new Error('Run race write checks only against a local test database.');
 async function call(action,extra={},expected=200){
  const r=await fetch(base+'/api/game',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...extra})});
  const data=await r.json();assert.equal(r.status,expected,JSON.stringify(data));return data;
 }
-let a=await call('create',{name:'QA Jump Kitty',skin:'tuxedo'});const aid=a.identity;
+let a=await call('create',{name:'QA Jump Kitty',skin:'tuxedo'});const aid=a.identity,profileId=a.profile.id;
 assert.ok(!JSON.stringify(a.room).includes(aid.token));assert.equal(a.room.players[0].skin,'tuxedo');
 await call('start',aid,409);
 const b=await call('join',{code:a.room.code,name:'QA Runner',skin:'calico'}),bid=b.identity;
@@ -15,7 +16,7 @@ a=await call('start',aid);
 await call('join',{code:a.room.code,name:'Late racer'},409);
 console.log('PASS: create, join, readiness, host-only start, token protection, closed race entry.');
 let seq=0,lastLog=0;
-const expires=Date.now()+90000;
+const expires=Date.now()+135000;
 while(a.room.status!=='finished'&&Date.now()<expires){
  const r=a.room,p=r.players.find(p=>p.id===aid.id),now=r.serverNow;
  if(now>=r.startAt){
@@ -33,8 +34,11 @@ const final=await call('state',bid);
 assert.deepEqual(a.room.players.map(p=>p.finish),final.room.players.map(p=>p.finish));
 assert.ok(a.room.players.every(p=>p.finish!==null));
 assert.ok(a.room.players.find(p=>p.id===aid.id).finish<a.room.players.find(p=>p.id===bid.id).finish);
+const records=await(await fetch(base+'/api/leaderboard?mode=online')).json();
+const record=records.entries.find(p=>p.profile_id===profileId);assert.equal(record.races,1);assert.equal(record.wins,1);assert.equal(record.skin,'tuxedo');
 console.log('PASS: full two-player race, jumps/grabs affect finish, consistent authoritative results.',a.room.players.map(p=>({name:p.name,time:p.finish,boosts:p.collected.length,hits:p.hits.length})));
 await call('rematch',bid,403);const reset=await call('rematch',aid);
 assert.deepEqual(reset.room.players.map(p=>p.skin),['tuxedo','calico']);assert.equal(reset.room.status,'lobby');assert.ok(reset.room.players.every(p=>p.x===0&&!p.ready));
+assert.equal(reset.room.players[0].profileId,profileId);
 console.log('PASS: rematch resets the room and retains players.');
 await call('leave',bid);await call('leave',aid);

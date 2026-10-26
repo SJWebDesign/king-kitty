@@ -13,6 +13,9 @@ https://king-kitty-alley-race.nielsensamantha2005.chatgpt.site
 - **Local co-op:** two players share one keyboard and race in split screen.
 - **Jump:** Space, W, or Up. **Grab:** E, G, or Right. Touch buttons are also available.
 - Local two-player controls: Player 1 W/E; Player 2 Up/Right.
+- **Longer alley:** 24,000 units, about 80–100 seconds depending on jumps and boosts. Five obstacle sizes mix short, wide objects with taller ones. Time your jump so your paws stay above the entire obstacle.
+- **All-time leaderboard:** online, solo, and local races all contribute. Fastest times rank first; race counts and competitive wins are also shown. Records begin with v0.3 and stay in the hosted database across updates. Earlier v0.2 races did not store a permanent history and cannot be recovered.
+- **Loading scenes:** an animated selected cat and paw trail appear while art, rooms, and scores load. Short minimum durations keep transitions smooth.
 
 The scrolling course, animated characters, moving pickups, scenery props, and interface are separate assets. Each menu has its own illustrated alley scene. Every button uses one transparent green-and-gold frame with a gentle float. Reduced Motion disables decorative animation.
 
@@ -23,21 +26,29 @@ Requires Node.js 24 and npm.
 ```sh
 npm ci
 npm run build
-npx wrangler d1 migrations apply DB --local --config dist/server/wrangler.json --persist-to .wrangler/state
+node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_special_charles_xavier.sql
+node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0001_nasty_maria_hill.sql
 npm start
 ```
 
-The start command prints the local URL. Use the same server from two browser sessions to test room-code multiplayer.
+Apply each SQL file only once to a fresh local database; skip files you already applied. The start command prints the local URL. Use the same server from two browser sessions to test room-code multiplayer.
 
 ## Checks
 
 ```sh
 npx tsc --noEmit --incremental false
-node --test tests/game.test.mjs tests/tutorial.test.mjs
+node --test tests/*.test.mjs
+node tests/leaderboard-smoke.mjs
 node tests/api-smoke.mjs
 ```
 
-The API smoke test requires a running local server on port 5173, or set `TEST_URL` to its URL. It creates two test racers, completes a full race, verifies results, rematches, and leaves the test room.
+The smoke tests require a running local server on port 5173, or set `TEST_URL` to another localhost URL. They intentionally refuse production URLs so test scores do not enter the public all-time leaderboard. The race test creates two test racers, completes a full race, verifies results and stored records, rematches, and leaves the test room.
+
+## Race records and privacy
+
+Nicknames, selected cats, best finish times, wins, and race counts are public. Use a nickname, not personal contact details. A random browser-held key identifies each local player; the database stores only its hash. Keeping this browser's site data preserves the same racer identity. Clearing site data or switching devices creates a new identity, while old records stay published. No email, birthday, or login is requested.
+
+Online results come from server physics. Solo/local results replay the actual jump and grab inputs on the server; the server calculates the finish times. Retries do not count a race twice. This validates plausible gameplay, but is not a comprehensive competitive anti-cheat system. Offline solo/local results queue on the device and upload when connected. Records do not have a scheduled expiry; continued availability depends on keeping the hosting project and database active.
 
 ## Hosting
 
@@ -57,6 +68,7 @@ The original 16 interface images and four backgrounds supplied by Samantha are r
 - `scenes-social.png`: four menu scenes, displayed as separate CSS viewports.
 - `scenes-learn.png`: tutorial, rules, settings, and results scenes.
 - `scene-pause.png`: pause-menu scene.
+- `scenes-records.png`: separate leaderboard and loading scenes.
 - `button-frame.png`: the shared transparent frame used by every button.
 
 Generation briefs are recorded in `ASSET-PROMPTS.txt`, `SCENE-PROMPTS.txt`, and `ADDITIONAL-ASSET-PROMPTS.txt`. Artwork remains separate from live text, controls, and game state.

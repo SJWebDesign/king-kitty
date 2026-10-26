@@ -1,13 +1,13 @@
 import { validCat, type CatSkin } from "./cats";
-export const LENGTH = 14000;
+export const LENGTH = 24000;
 export const SPEED = 290;
 export const STEP = 20;
 export const COLORS = ["#edbc68", "#85d4d1", "#dd9fce", "#a8ce8b", "#f78f7c", "#98b8f8", "#e7d985", "#ccb6f0"];
-export type Obstacle = { id: number; x: number; h: number; kind: number };
+export type Obstacle = { id: number; x: number; h: number; w?: number; kind: number };
 export type Pickup = { id: number; x: number; y: number; kind: "mouse" | "bird" };
 export type Course = { obstacles: Obstacle[]; pickups: Pickup[] };
 export type Player = {
-  id: string; name: string; color: string; token?: string; ready: boolean; skin: CatSkin;
+  id: string; name: string; color: string; token?: string; ready: boolean; skin: CatSkin; profileId?: string;
   x: number; y: number; vy: number; slowUntil: number; boostUntil: number;
   grabUntil: number; nextGrab: number; finish: number | null;
   hits: number[]; collected: number[]; lastSeq: number; seenAt: number; left?: boolean;
@@ -25,7 +25,9 @@ export function courseFor(seed: number): Course {
   const r = random(seed), obstacles: Obstacle[] = [], pickups: Pickup[] = [];
   for (let x = 1100; x < LENGTH - 450; x += 530 + r() * 310) {
     const id = obstacles.length;
-    obstacles.push({id, x, h: 38 + r() * 20, kind: Math.floor(r() * 4)});
+    const sizes=[{h:34,w:58,kind:2},{h:52,w:82,kind:0},{h:86,w:64,kind:0},{h:42,w:126,kind:3},{h:68,w:88,kind:1}];
+    const size=sizes[Math.floor(r()*sizes.length)];
+    obstacles.push({id,x,...size});
     // A randomly placed opportunity between obstacles. Every racer sees the same course.
     const kind = r() < .55 ? "mouse" : "bird";
     pickups.push({id, x: x + 220 + r() * 90, y: kind === "mouse" ? 20 : 125, kind});
@@ -56,7 +58,7 @@ export function start(room: Room, now: number) {
 export function rematch(room: Room, seed: number) {
   room.seed = seed; room.round++; room.status = "lobby"; room.tick = 0; room.startAt = 0;
   room.course = courseFor(seed);
-  room.players = room.players.filter(p => !p.left).map((p,i) => player(p.id,p.name,i,p.token,validCat(p.skin)));
+  room.players = room.players.filter(p => !p.left).map((p,i) => ({...player(p.id,p.name,i,p.token,validCat(p.skin)),profileId:p.profileId}));
 }
 export function input(room: Room, id: string, action: "jump" | "grab", now: number, seq?: number) {
   const p = room.players.find(p => p.id === id);
@@ -81,7 +83,8 @@ export function advance(room: Room, now: number) {
       p.x = Math.min(LENGTH, p.x + speed * dt);
       if (p.y > 0 || p.vy > 0) { p.y = Math.max(0, p.y + p.vy * dt); p.vy -= 1550 * dt; if (p.y === 0) p.vy = 0; }
       for (const ob of room.course.obstacles) {
-        if (oldX <= ob.x + 22 && p.x >= ob.x - 25 && p.y < ob.h && !p.hits.includes(ob.id)) {
+        const reach=(ob.w??50)/2+10;
+        if (oldX <= ob.x + reach && p.x >= ob.x - reach && p.y < ob.h && !p.hits.includes(ob.id)) {
           p.hits.push(ob.id); p.slowUntil = t + 760;
         }
       }
