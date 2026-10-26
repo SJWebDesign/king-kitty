@@ -125,7 +125,7 @@ export default function Game() {
   const me=room?.players.find(p=>p.id===identity?.id),host=room?.host===identity?.id;
   const ranking=room?standings(room):[],winner=ranking.find(p=>p.finish!==null);
   const tied=!!(winner&&ranking[1]?.finish!==null&&ranking[1]?.finish!==undefined&&Math.abs(winner.finish!-ranking[1].finish!)<.001);
-  const elapsed=room?Math.max(0,(now-room.startAt)/1000):0;
+  const elapsed=room?Math.max(0,((localPaused.current??now)-room.startAt)/1000):0;
   return <main className={`game-app scene-${screen} ${screen==="race"?"in-race":""}`}>
     <div className="menu-scene" aria-hidden="true"><div className="scene-art" key={screen}/></div><div className="scene-shade" aria-hidden="true"/>{screen!=="race"&&<div className={`scene-companion companion-${screen}`} aria-hidden="true"><div className="scene-kitty" style={{backgroundImage:`url(${catAsset(screen==="results"?winner?.skin:skin)})`}}/></div>}
     <header className="topbar"><button className="wordmark" onClick={()=>screen==="race"?toggleMenu():room?void leave():navigate("menu")} aria-label="King Kitty home">♛ <span>KING KITTY</span></button><div className="top-meta"><span className="live-dot"/> {screen==="race"?`${Math.floor(elapsed/60)}:${Math.floor(elapsed%60).toString().padStart(2,"0")}`:"THE ALLEY IS YOURS"}<button className="sound-button" onClick={()=>changeSound(!sound)} aria-label={sound?"Mute audio":"Enable audio"}>{sound?"♫":"♪"}<span>{sound?"ON":"OFF"}</span></button></div></header>

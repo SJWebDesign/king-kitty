@@ -8,7 +8,7 @@ King Kitty is a 2D multiplayer alley race. Everyone starts together and runs aut
 Live playable URL: https://king-kitty-alley-race.nielsensamantha2005.chatgpt.site
 GitHub source: https://github.com/SJWebDesign/king-kitty
 Sharing: confirm the game opens without owner sign-in before submitting.
-Cover: pending a real gameplay screenshot, at least 1200px wide; 3:2 recommended.
+Cover: outputs/king-kitty-gameplay.png (real gameplay capture; over 1200px wide).
 Showcase: required for challenge entry. The final entry has not been published.
 
 Submission page:

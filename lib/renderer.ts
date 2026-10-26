@@ -60,7 +60,7 @@ export function drawRace(canvas:HTMLCanvasElement,room:Room,focusId:string,art:A
     const position=pickupPosition(obj,room.tick),x=sx(position.x);
     if(x< -80||x>w+80||me.collected.includes(obj.id))continue;
     const index=(obj.kind==="mouse"?0:4)+(Math.floor(now/(obj.kind==="mouse"?85:115))%4);
-    const y=ground-position.y*scale;
+    const y=obj.kind==="mouse"?ground+5*scale:ground-position.y*scale;
     ctx.save();ctx.translate(x,y);ctx.scale(position.facing,1);ctx.shadowColor="#e6bb67";ctx.shadowBlur=7;
     sprite(ctx,art.boosts,art.boostFrames[index],0,0,52*scale,45*scale);ctx.restore();
     ctx.fillStyle="#f7da8e";ctx.font=`${Math.round(12*scale)}px monospace`;ctx.textAlign="center";ctx.fillText("+",x,y-48*scale);
