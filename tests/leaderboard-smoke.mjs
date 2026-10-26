@@ -11,9 +11,13 @@ await post(replay); // Simulates a retry after a dropped first response.
 let data=await board();let entry=data.entries.find(e=>e.profile_id===keys[0].id);assert.equal(entry.races,1);assert.equal(entry.wins,0);assert.equal(entry.skin,'tuxedo');assert.ok(!JSON.stringify(data).includes(keys[0].token));assert.ok(!JSON.stringify(data).includes('secret_hash'));
 await post({...replay,duration:1,id:crypto.randomUUID()},400);
 await post({...replay,id:crypto.randomUUID(),players:[{...replay.players[0],profile:{...keys[0],token:'x'.repeat(72)}}]},400);
+const rename=await fetch(base+'/api/leaderboard',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({profile:keys[0],name:'Moon Paws'})});assert.equal(rename.status,200);
+assert.equal((await board()).entries.find(e=>e.profile_id===keys[0].id).name,'Moon Paws');
+await post(replay); // An older queued replay must not undo a newer nickname.
+assert.equal((await board()).entries.find(e=>e.profile_id===keys[0].id).name,'Moon Paws');
 await post({...replay,id:crypto.randomUUID(),mode:'local',players:[...replay.players,{name:'QA Calico',skin:'calico',profile:keys[1]}]});
 data=await board();entry=data.entries.find(e=>e.profile_id===keys[0].id);assert.equal(entry.races,2);
 assert.equal((await board('practice')).entries.find(e=>e.profile_id===keys[0].id).races,1);
 assert.equal((await board('local')).entries.find(e=>e.profile_id===keys[1].id).skin,'calico');
 assert.ok(!(await board('online')).entries.some(e=>e.profile_id===keys[0].id));
-console.log('PASS: persistent profiles, solo and local records, exact replay validation, idempotent retry, filters, cat identity, and no public secrets.');
+console.log('PASS: persistent profiles and nicknames, solo and local records, exact replay validation, idempotent retry, filters, cat identity, and no public secrets.');

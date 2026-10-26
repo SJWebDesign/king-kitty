@@ -7,7 +7,7 @@ A 2D multiplayer alley race by Samantha and her crew. Run automatically, jump ov
 https://king-kitty-alley-race.nielsensamantha2005.chatgpt.site
 
 - **Tutorial:** four short, interactive lessons: jump, mouse, bird, finish.
-- **Choose cat:** Tuxedo (default), Ginger, Silver tabby, or Calico. Choose Player 2 separately for local play. Your selected cat also appears on the winner screen and remains selected for rematches.
+- **Your racer:** enter your nickname once on this browser and choose Tuxedo (default), Ginger, Silver tabby, or Calico. Player 2 gets their own saved name and cat for local play. Names appear on the race, winner screen, and all-time leaderboard. You can edit your nickname here later without losing records; old queued races cannot undo a newer name.
 - **Start game:** solo practice.
 - **Host game / Join game:** 2–8 players using a six-character room code. Everyone taps Ready; the host starts a shared countdown.
 - **Local co-op:** two players share one keyboard and race in split screen.

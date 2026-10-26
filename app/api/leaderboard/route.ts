@@ -21,9 +21,21 @@ export async function POST(request:Request){
   try{
     const raw=await request.text();if(raw.length>200000)return response({error:'Race record is too large.'},413);
     const data=JSON.parse(raw) as LocalReplay,r=replayRace(data);
-    const profiles=await Promise.all(data.players.map(p=>ensureProfile(db,p.profile,p.name)));
+    const profiles=await Promise.all(data.players.map(p=>ensureProfile(db,p.profile,p.name,false)));
     r.players.forEach((p,i)=>{p.profileId=profiles[i].id;p.name=cleanRacer(data.players[i].name);});
     await recordRace(db,r,`local:${data.id}`);
     return response({saved:true,profiles,times:r.players.map(p=>p.finish)});
   }catch(e){return response({error:e instanceof Error?e.message:'Could not save your result.'},400);}
+}
+export async function PUT(request:Request){
+  const db=env.DB;if(!db)return response({error:'The leaderboard is getting ready.'},503);
+  const origin=request.headers.get('origin');if(origin&&origin!==new URL(request.url).origin)return response({error:'Request origin is not allowed.'},403);
+  try{
+    const raw=await request.text();if(raw.length>2000)return response({error:'Name request is too large.'},413);
+    const data=JSON.parse(raw);
+    if(typeof data?.name!=='string'||!data.name.trim().replace(/[<>\u0000-\u001f]/g,''))return response({error:'Choose a nickname first.'},400);
+    if(!data.profile?.id||!data.profile?.token)return response({error:'Your racer could not be verified.'},400);
+    const profile=await ensureProfile(db,data.profile,data.name);
+    return response({profile,name:cleanRacer(data.name)});
+  }catch{return response({error:'Your name could not be saved. Please try again.'},400);}
 }
