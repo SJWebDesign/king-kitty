@@ -1,3 +1,4 @@
+import { validCat, type CatSkin } from "./cats";
 export const LENGTH = 14000;
 export const SPEED = 290;
 export const STEP = 20;
@@ -6,7 +7,7 @@ export type Obstacle = { id: number; x: number; h: number; kind: number };
 export type Pickup = { id: number; x: number; y: number; kind: "mouse" | "bird" };
 export type Course = { obstacles: Obstacle[]; pickups: Pickup[] };
 export type Player = {
-  id: string; name: string; color: string; token?: string; ready: boolean;
+  id: string; name: string; color: string; token?: string; ready: boolean; skin: CatSkin;
   x: number; y: number; vy: number; slowUntil: number; boostUntil: number;
   grabUntil: number; nextGrab: number; finish: number | null;
   hits: number[]; collected: number[]; lastSeq: number; seenAt: number; left?: boolean;
@@ -27,12 +28,21 @@ export function courseFor(seed: number): Course {
     obstacles.push({id, x, h: 38 + r() * 20, kind: Math.floor(r() * 4)});
     // A randomly placed opportunity between obstacles. Every racer sees the same course.
     const kind = r() < .55 ? "mouse" : "bird";
-    pickups.push({id, x: x + 220 + r() * 90, y: kind === "mouse" ? 20 : 92, kind});
+    pickups.push({id, x: x + 220 + r() * 90, y: kind === "mouse" ? 20 : 125, kind});
   }
   return {obstacles, pickups};
 }
-export function player(id: string, name: string, index = 0, token?: string): Player {
-  return {id, name, color: COLORS[index % COLORS.length], token, ready: false,
+// The same clock drives movement and hit detection on every device.
+export function pickupPosition(obj: Pickup, elapsed: number) {
+  const phase = elapsed / (obj.kind === "bird" ? 700 : 450) + obj.id * 1.7;
+  return {
+    x: obj.x + Math.sin(phase) * (obj.kind === "bird" ? 55 : 32),
+    y: obj.y + (obj.kind === "bird" ? Math.sin(phase * .8) * 10 : 0),
+    facing: Math.cos(phase) < 0 ? -1 : 1,
+  };
+}
+export function player(id: string, name: string, index = 0, token?: string, skin: CatSkin = "ginger"): Player {
+  return {id, name, color: COLORS[index % COLORS.length], token, ready: false, skin: validCat(skin),
     x: 0, y: 0, vy: 0, slowUntil: 0, boostUntil: 0, grabUntil: 0, nextGrab: 0,
     finish: null, hits: [], collected: [], lastSeq: 0, seenAt: Date.now()};
 }
@@ -46,7 +56,7 @@ export function start(room: Room, now: number) {
 export function rematch(room: Room, seed: number) {
   room.seed = seed; room.round++; room.status = "lobby"; room.tick = 0; room.startAt = 0;
   room.course = courseFor(seed);
-  room.players = room.players.filter(p => !p.left).map((p,i) => player(p.id,p.name,i,p.token));
+  room.players = room.players.filter(p => !p.left).map((p,i) => player(p.id,p.name,i,p.token,validCat(p.skin)));
 }
 export function input(room: Room, id: string, action: "jump" | "grab", now: number, seq?: number) {
   const p = room.players.find(p => p.id === id);
@@ -76,7 +86,9 @@ export function advance(room: Room, now: number) {
         }
       }
       if (p.grabUntil > t) for (const obj of room.course.pickups) {
-        if (!p.collected.includes(obj.id) && obj.x - p.x > -35 && obj.x - p.x < 100 && Math.abs(obj.y - (p.y + 30)) < 62) {
+        const position = pickupPosition(obj, t);
+        const canReach = obj.kind !== "bird" || p.y > 10;
+        if (canReach && !p.collected.includes(obj.id) && position.x - p.x > -35 && position.x - p.x < 100 && Math.abs(position.y - (p.y + 30)) < 62) {
           p.collected.push(obj.id); p.boostUntil = Math.max(p.boostUntil,t) + 1300; break;
         }
       }

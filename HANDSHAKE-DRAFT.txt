@@ -5,7 +5,9 @@ Title: King Kitty
 Description (414/500 characters, entered in Handshake but not published):
 King Kitty is a 2D multiplayer alley race. Everyone starts together and runs automatically. Jump over obstacles and grab birds or mice for small, random speed boosts. Obstacles slow you down but never eliminate you. The first player across the finish line wins, with final times shown for everyone. The pixel-art alley scrolls in layers, with separate character animations, moving scenery, and interactive objects.
 
-Live playable URL: pending tested publication.
+Live playable URL: https://king-kitty-alley-race.nielsensamantha2005.chatgpt.site
+GitHub source: https://github.com/SJWebDesign/king-kitty
+Sharing: confirm the game opens without owner sign-in before submitting.
 Cover: pending a real gameplay screenshot, at least 1200px wide; 3:2 recommended.
 Showcase: required for challenge entry. The final entry has not been published.
 
@@ -24,3 +26,12 @@ Artwork requirements approved by Samantha:
 
 First-pass tuning (adjustable):
 2–8 online racers; one course; simultaneous four-second countdown; 25% boosts for 1.3 seconds; obstacle slowdown for 0.76 seconds; no elimination. The same randomized layout is shared by all players, and each player can collect their own pickups. Exact ties trigger a rematch to decide the crown. Solo practice and two-player local racing are also available.
+
+Updates approved after the original draft:
+- A distinct illustrated scene for every screen, with subtle ambient motion.
+- One consistent, smaller transparent button frame for all controls.
+- Four-step playable tutorial with short, plain instructions.
+- Moving mice run and birds flap. Birds require jumping and grabbing in the air.
+- A new public GitHub source repository. Live multiplayer needs a Worker/database host.
+
+- Four selectable cat skins, Tuxedo by default, with the correct winning cat shown in results.

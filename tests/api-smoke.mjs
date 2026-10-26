@@ -4,10 +4,10 @@ async function call(action,extra={},expected=200){
  const r=await fetch(base+'/api/game',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...extra})});
  const data=await r.json();assert.equal(r.status,expected,JSON.stringify(data));return data;
 }
-let a=await call('create',{name:'QA Jump Kitty'});const aid=a.identity;
-assert.ok(!JSON.stringify(a.room).includes(aid.token));
+let a=await call('create',{name:'QA Jump Kitty',skin:'tuxedo'});const aid=a.identity;
+assert.ok(!JSON.stringify(a.room).includes(aid.token));assert.equal(a.room.players[0].skin,'tuxedo');
 await call('start',aid,409);
-const b=await call('join',{code:a.room.code,name:'QA Runner'}),bid=b.identity;
+const b=await call('join',{code:a.room.code,name:'QA Runner',skin:'calico'}),bid=b.identity;
 await call('start',bid,403);
 await call('state',{...aid,token:'wrong'},401);
 await call('ready',{...aid,ready:true});await call('ready',{...bid,ready:true});
@@ -35,6 +35,6 @@ assert.ok(a.room.players.every(p=>p.finish!==null));
 assert.ok(a.room.players.find(p=>p.id===aid.id).finish<a.room.players.find(p=>p.id===bid.id).finish);
 console.log('PASS: full two-player race, jumps/grabs affect finish, consistent authoritative results.',a.room.players.map(p=>({name:p.name,time:p.finish,boosts:p.collected.length,hits:p.hits.length})));
 await call('rematch',bid,403);const reset=await call('rematch',aid);
-assert.equal(reset.room.status,'lobby');assert.ok(reset.room.players.every(p=>p.x===0&&!p.ready));
+assert.deepEqual(reset.room.players.map(p=>p.skin),['tuxedo','calico']);assert.equal(reset.room.status,'lobby');assert.ok(reset.room.players.every(p=>p.x===0&&!p.ready));
 console.log('PASS: rematch resets the room and retains players.');
 await call('leave',bid);await call('leave',aid);

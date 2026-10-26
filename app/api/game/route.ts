@@ -1,5 +1,6 @@
 import { env } from "cloudflare:workers";
 import { advance, input, newRoom, player, publicRoom, rematch, start, type Room } from "@/lib/game";
+import { validCat } from "@/lib/cats";
 export const dynamic = "force-dynamic";
 type Row = { code: string; state: string; revision: number; expires_at: number };
 function response(value: unknown, status = 200) {
@@ -19,7 +20,7 @@ export async function POST(request: Request) {
   const action = b.action, now=Date.now();
   try {
     if (action === "create") {
-      const host = player(secret().slice(0,12),cleanName(b.name),0,secret());
+      const host = player(secret().slice(0,12),cleanName(b.name),0,secret(),validCat(b.skin));
       const room = newRoom(code(),host,"online",crypto.getRandomValues(new Uint32Array(1))[0]);
       // Expired lobbies never retain nicknames or session tokens indefinitely.
       await env.DB.prepare("DELETE FROM rooms WHERE expires_at < ?").bind(now).run();
@@ -37,7 +38,7 @@ export async function POST(request: Request) {
       if(action==="join") {
         if(room.status!=="lobby") return response({error:"This race has already started. Join after the next rematch."},409);
         if(room.players.length>=8) return response({error:"This room is full (8 racers)."},409);
-        const p=player(joinId,cleanName(b.name),room.players.length,joinToken);
+        const p=player(joinId,cleanName(b.name),room.players.length,joinToken,validCat(b.skin));
         room.players.push(p); identity={id:p.id,token:p.token,code:room.code};
       } else {
         const p=room.players.find(p=>p.id===b.id && p.token===b.token && !p.left);

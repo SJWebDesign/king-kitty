@@ -1,20 +1,24 @@
-import { COLORS, LENGTH, advance, standings, type Room, type Player } from "./game";
+import { COLORS, LENGTH, advance, standings, pickupPosition, type Room, type Player } from "./game";
+import { CATS, validCat, type CatSkin } from "./cats";
 type Sprite = { x:number;y:number;w:number;h:number };
-type Art = { wall: HTMLImageElement; cat: HTMLImageElement; props: HTMLImageElement; catFrames: Sprite[]; propFrames: Sprite[] };
+export type GameArt = { skins: Record<CatSkin,{image:HTMLImageElement;frames:Sprite[]}>; wall: HTMLImageElement; cat: HTMLImageElement; props: HTMLImageElement; boosts: HTMLImageElement; boostFrames: Sprite[]; catFrames: Sprite[]; propFrames: Sprite[] };
+type Art = GameArt;
 function load(src:string):Promise<HTMLImageElement> { return new Promise((resolve,reject)=>{ const im=new Image(); im.onload=()=>resolve(im); im.onerror=()=>reject(new Error(`Could not load ${src}`)); im.src=src; }); }
-function frames(im:HTMLImageElement):Sprite[] {
+function frames(im:HTMLImageElement,columns=4,rows=3):Sprite[] {
   const c=document.createElement("canvas");c.width=im.width;c.height=im.height;
   const ctx=c.getContext("2d")!;ctx.drawImage(im,0,0);const data=ctx.getImageData(0,0,c.width,c.height).data;
-  return Array.from({length:12},(_,i)=>{
-    const x0=(i%4)*384,y0=Math.round(Math.floor(i/4)*1024/3),y1=Math.round((Math.floor(i/4)+1)*1024/3);
-    let left=x0+383,right=x0,top=y1-1,bottom=y0;
-    for(let y=y0;y<y1;y++)for(let x=x0;x<x0+384;x++)if(data[(y*im.width+x)*4+3]>35){left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);}
+  return Array.from({length:columns*rows},(_,i)=>{
+    const cw=im.width/columns,x0=Math.round((i%columns)*cw),x1=Math.round((i%columns+1)*cw),y0=Math.round(Math.floor(i/columns)*im.height/rows),y1=Math.round((Math.floor(i/columns)+1)*im.height/rows);
+    let left=x1-1,right=x0,top=y1-1,bottom=y0;
+    for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++)if(data[(y*im.width+x)*4+3]>35){left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);}
     return {x:left,y:top,w:Math.max(1,right-left+1),h:Math.max(1,bottom-top+1)};
   });
 }
 export async function loadArt():Promise<Art> {
-  const [wall,cat,props]=await Promise.all([load("/assets/alley-background.jpg"),load("/assets/kitty-sheet.png"),load("/assets/props-sheet.png")]);
-  return {wall,cat,props,catFrames:frames(cat),propFrames:frames(props)};
+  const [wall,cat,props,boosts]=await Promise.all([load("/assets/alley-background.jpg"),load("/assets/kitty-sheet.png"),load("/assets/props-sheet.png"),load("/assets/boosts-sheet.png")]);
+  const variants=await Promise.all(CATS.map(async variant=>{const image=variant.id==="ginger"?cat:await load(variant.asset);return [variant.id,{image,frames:frames(image)}] as const;}));
+  const skins=Object.fromEntries(variants) as GameArt["skins"];
+  return {skins,wall,cat,props,boosts,boostFrames:frames(boosts,4,2),catFrames:frames(cat),propFrames:frames(props)};
 }
 function sprite(ctx:CanvasRenderingContext2D,im:HTMLImageElement,frame:Sprite,x:number,baseline:number,width:number,height:number) {
   const scale=Math.min(width/frame.w,height/frame.h);
@@ -24,7 +28,7 @@ function tile(ctx:CanvasRenderingContext2D,im:HTMLImageElement,sy:number,sh:numb
   const tw=1280*h/sh, off=((offset%tw)+tw)%tw;
   for(let x=-off;x<w;x+=tw)ctx.drawImage(im,0,sy,1280,sh,x,y,tw+1,h);
 }
-export function drawRace(canvas:HTMLCanvasElement,room:Room,focusId:string,art:Art,now:number,compact=false) {
+export function drawRace(canvas:HTMLCanvasElement,room:Room,focusId:string,art:Art,now:number,compact=false,tutorial=false) {
   const box=canvas.getBoundingClientRect(), dpr=Math.min(window.devicePixelRatio||1,2);
   if(canvas.width!==Math.round(box.width*dpr)||canvas.height!==Math.round(box.height*dpr)){canvas.width=Math.round(box.width*dpr);canvas.height=Math.round(box.height*dpr);}
   const ctx=canvas.getContext("2d")!; ctx.setTransform(dpr,0,0,dpr,0,0);
@@ -53,13 +57,13 @@ export function drawRace(canvas:HTMLCanvasElement,room:Room,focusId:string,art:A
     sprite(ctx,art.props,art.propFrames[ob.kind],x,ground+8*scale,95*scale,(ob.h+10)*scale);
   }
   for(const obj of room.course.pickups){
-    const x=sx(obj.x);if(x< -80||x>w+80||me.collected.includes(obj.id))continue;
-    const bounce=obj.kind==="bird"?Math.sin(now/150+obj.id)*6:Math.sin(now/80)*1.5;
-    const index=obj.kind==="mouse"?8:9+(Math.floor(now/150)%2);
-    const y=ground-obj.y*scale+bounce;
-    ctx.save();ctx.shadowColor="#e6bb67";ctx.shadowBlur=9;
-    sprite(ctx,art.props,art.propFrames[index],x,y,47*scale,42*scale);ctx.restore();
-    ctx.fillStyle="#f7da8e";ctx.font=`${Math.round(12*scale)}px monospace`;ctx.textAlign="center";ctx.fillText("+",x,y-46*scale);
+    const position=pickupPosition(obj,room.tick),x=sx(position.x);
+    if(x< -80||x>w+80||me.collected.includes(obj.id))continue;
+    const index=(obj.kind==="mouse"?0:4)+(Math.floor(now/(obj.kind==="mouse"?85:115))%4);
+    const y=ground-position.y*scale;
+    ctx.save();ctx.translate(x,y);ctx.scale(position.facing,1);ctx.shadowColor="#e6bb67";ctx.shadowBlur=7;
+    sprite(ctx,art.boosts,art.boostFrames[index],0,0,52*scale,45*scale);ctx.restore();
+    ctx.fillStyle="#f7da8e";ctx.font=`${Math.round(12*scale)}px monospace`;ctx.textAlign="center";ctx.fillText("+",x,y-48*scale);
   }
   const finishX=sx(LENGTH);
   if(finishX<w+150&&finishX> -150){
@@ -75,7 +79,8 @@ export function drawRace(canvas:HTMLCanvasElement,room:Room,focusId:string,art:A
     const y=ground-p.y*scale;
     ctx.fillStyle="rgba(0,0,0,.27)";ctx.beginPath();ctx.ellipse(x,ground+6*scale,36*scale,7*scale,0,0,Math.PI*2);ctx.fill();
     if(room.tick<p.boostUntil){ctx.fillStyle="rgba(255,215,112,.4)";for(let j=0;j<4;j++)ctx.fillRect(x-65*scale-j*15*scale,y-20*scale-j*12*scale,15*scale,2*scale);}
-    sprite(ctx,art.cat,art.catFrames[frame],x,y+7*scale,115*scale,94*scale);
+    const appearance=art.skins[validCat(p.skin)];
+    sprite(ctx,appearance.image,appearance.frames[frame],x,y+7*scale,115*scale,94*scale);
     ctx.fillStyle=p.color;ctx.fillRect(x-24*scale,y-110*scale,48*scale,3*scale);
     ctx.font=`bold ${Math.max(11,12*scale)}px system-ui`;ctx.textAlign="center";ctx.fillStyle=mine?"#fff1c9":p.color;ctx.fillText(mine?`${p.name} · YOU`:p.name,x,y-119*scale);
     ctx.restore();
@@ -86,6 +91,7 @@ export function drawRace(canvas:HTMLCanvasElement,room:Room,focusId:string,art:A
     const y=ground+25+Math.sin(decorativeTime/700+j)*14;
     sprite(ctx,art.props,art.propFrames[11],x,y,16+4*(j%3),16);
   }
+  if(tutorial)return;
   const rank=standings(room).findIndex(p=>p.id===me.id)+1;
   ctx.textAlign="left";ctx.fillStyle="rgba(12,22,27,.8)";ctx.fillRect(15,15,compact?175:215,compact?52:64);
   ctx.fillStyle="#edc77e";ctx.font=`bold ${compact?18:24}px Georgia`;ctx.fillText(`${rank} / ${room.players.length}`,28,compact?39:46);
