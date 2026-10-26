@@ -1,0 +1,22 @@
+{
+  "on": "public/assets/on.jpg",
+  "slider": "public/assets/slider.jpg",
+  "quit": "public/assets/quit.jpg",
+  "main-menu": "public/assets/main-menu.jpg",
+  "controls": "public/assets/controls.jpg",
+  "off": "public/assets/off.jpg",
+  "audio": "public/assets/audio.jpg",
+  "continue": "public/assets/continue.jpg",
+  "back": "public/assets/back.jpg",
+  "start-game": "public/assets/start-game.jpg",
+  "host-game": "public/assets/host-game.jpg",
+  "local-coop": "public/assets/local-coop.jpg",
+  "join-game": "public/assets/join-game.jpg",
+  "multiplayer": "public/assets/multiplayer.jpg",
+  "settings": "public/assets/settings.jpg",
+  "ready": "public/assets/ready.jpg",
+  "alley-background": "public/assets/alley-background.jpg",
+  "alley-background-2": "public/assets/alley-background-2.jpg",
+  "alley-background-3": "public/assets/alley-background-3.jpg",
+  "main-scene": "public/assets/main-scene.jpg"
+}

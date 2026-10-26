@@ -1,0 +1,16 @@
+King Kitty asset generation — built-in image_gen tool
+
+Character sheet: public/assets/kitty-sheet.png
+RGBA 1536x1024, 4 columns by 3 rows; twelve separate animation poses.
+
+Prompt:
+Use case: stylized-concept. Asset type: production game character animation sprite sheet, actual transparent background. Create King Kitty, an appealing small orange tabby cat with a tiny gold crown, for a 2D rightward-running multiplayer alley racer. Style: crisp richly shaded pixel art, warm amber highlights, dark ink outlines, muted palette matching a dusk brick alley. Draw EXACTLY twelve separate full-body poses in a strict regular 4-column by 3-row grid on a 1536x1024 transparent canvas; each cell is 384x341 approximately. Keep every pose centered within its cell, same scale and floor baseline at 82 percent of cell height, generous 15 percent transparent padding, tail and crown fully inside cell. Cat always faces RIGHT. Row 1: four consecutive running gait frames with clearly alternating legs. Row 2: jump launch, airborne stretched jump, landing crouch, forward paw extended grabbing pose. Row 3: standing idle, cheerful finish pose, stumble pose, fast extended sprint pose. Same character identity and small crown in every cell. These are game animation frames, NOT a presentation: no labels, no text, no gridlines, no tiles, no scenery, no ground, no borders, no checkerboard pattern, no contact shadows outside cat. Each sprite must be fully isolated with clean alpha. Four distinct cat poses per row exactly.
+
+Prop atlas: public/assets/props-sheet.png
+RGBA 1536x1024, 4 columns by 3 rows. Contains obstacles, decorative background props, mouse, bird frames, and leaf.
+
+Prompt:
+Use case: stylized-concept. Asset type: transparent pixel-art alley game prop atlas for a side-view 2D cat runner. A strict 4-column x 3-row grid, exactly 12 individually isolated objects, one per cell, 1536x1024 canvas. Cell artwork is centered, entirely contained with generous transparent padding; no overlaps across cells. Match richly shaded pixel-art dusk city alley, dark near-black outlines, muted forest green, brown brick, aged gold and warm amber lighting. Row1 left to right: low wooden crate obstacle, small tipped green trash bin obstacle, low discarded cardboard box obstacle, short brick rubble pile obstacle. Row2: tall wall-mounted black iron lantern with amber light, potted ivy plant, old recessed window with warm glow and dark green frame, tall iron drainpipe with elbow. These are separate decorative moving-background props with no wall behind them. Row3: small gray mouse in right-facing running pose, small blue-gray bird in right-facing flight pose wings up, same small bird wings down, one curling dry autumn leaf. Everything isolated on real transparent alpha, no white backdrop, no checkerboard pattern, no labels or text, no gridlines, no floor or scenery. Objects should feel from the same pixel art game. Pixel edges crisp. No characters other than the mouse and bird.
+
+All supplied JPG originals are retained in public/assets with descriptive names; mapping in asset-inventory.json. Generated images have verified alpha channels, with transparent cell boundaries. Individual frames/objects are drawn independently from each atlas; no characters or moving scenery are baked into the background.
+
